@@ -1,3 +1,8 @@
+<?php
+if(isset($_POST['navbtnplace'])) {
+                    echo  $_POST['navbtnplace'];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
