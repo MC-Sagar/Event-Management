@@ -9,8 +9,6 @@ else
 {
 	Header('Location: login.php');	
 }
-
-
 ?>
 <!--
 Author: W3layouts

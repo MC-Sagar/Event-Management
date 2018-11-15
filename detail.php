@@ -1,7 +1,56 @@
 <?php
-if(isset($_POST['navbtnplace'])) {
-                    echo  $_POST['navbtnplace'];
+require 'valid.php';
+require 'connection.php';
+$output = '';
+if(loggedin())
+{
+	echo 'Welcome '.$_SESSION['user_id'];
+	}
+else
+{
+	Header('Location: login.php');	
 }
+if(isset($_POST['navbtnplace'])) {
+      $_SESSION['event_id']  =  $_POST['navbtnplace'];
+      echo $_SESSION['event_id'];
+      $user_id = $_SESSION['user_id'];
+      $event_id = $_SESSION['event_id'];
+      $event_query = mysqli_query($conn,"SELECT * FROM event WHERE id='$event_id'") or die("could not search!");
+      $event_result = mysqli_fetch_array($event_query);
+
+
+      $venue_id = $event_result['venue_id'];
+      echo $venue_id;
+
+      $venue_query = mysqli_query($conn,"SELECT * FROM venue WHERE venue_id='$venue_id'") or die("could not search!");
+      $venue_result = mysqli_fetch_array($venue_query);
+
+      $sponsor_query = mysqli_query($conn,"SELECT * FROM sponsors WHERE id='$event_id'") or die("could not search!");
+      $count = mysqli_num_rows($sponsor_query);
+      if($count !== 0)
+		{
+		while($row = mysqli_fetch_array($sponsor_query)){
+      $logo_link = $row['logo_link'];
+
+      $output .= '<div class="col-lg-3 col-md-4 col-xs-6">
+      <div class="sponsor-logo">
+        <img src="'.$logo_link.'" class="img-fluid" alt="">
+      </div>
+    </div>';
+      
+
+      }
+
+    }
+      else if($count ==0){
+      $output .= 'There are no sponsorors For this event';
+      }
+    $ticket_query = mysqli_query($conn,"SELECT * FROM ticket WHERE id='$event_id'") or die("could not search!");
+    $ticket_result = mysqli_fetch_array($ticket_query);
+
+
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,18 +100,14 @@ if(isset($_POST['navbtnplace'])) {
       <div id="logo" class="pull-left">
         <!-- Uncomment below if you prefer to use a text logo -->
         <!-- <h1><a href="#main">C<span>o</span>nf</a></h1>-->
-        <a href="#intro" class="scrollto"><img src="img/logo.png" alt="" title=""></a>
+        <a href="search.php" class="scrollto"><img src="img/logo.png" alt="" title=""></a>
       </div>
 
       <nav id="nav-menu-container">
         <ul class="nav-menu">
-          <li class="menu-active"><a href="#intro">Home</a></li>
+          <li class="menu-active"><a href="search.php">Home</a></li>
           <li><a href="#about">About</a></li>
-          <li><a href="#speakers">Speakers</a></li>
-          <li><a href="#schedule">Schedule</a></li>
           <li><a href="#venue">Venue</a></li>
-          <li><a href="#hotels">Hotels</a></li>
-          <li><a href="#gallery">Gallery</a></li>
           <li><a href="#sponsors">Sponsors</a></li>
           <li><a href="#contact">Contact</a></li>
           <li class="buy-tickets"><a href="#buy-tickets">Buy Tickets</a></li>
@@ -76,9 +121,9 @@ if(isset($_POST['navbtnplace'])) {
   ============================-->
   <section id="intro">
     <div class="intro-container wow fadeIn">
-      <h1 class="mb-4 pb-0">The Annual<br><span>Marketing</span> Conference</h1>
+      <h1 class="mb-4 pb-0"><?php echo $event_result['name'];?></h1>
       <!--<p class="mb-4 pb-0">10-12 December, Downtown Conference Center, New York</p>-->
-      <a href="https://www.youtube.com/watch?v=jDDaplaOz7Q" class="venobox play-btn mb-4" data-vbtype="video"
+      <a href="<?php echo $event_result['video_link'];?>" class="venobox play-btn mb-4" data-vbtype="video"
         data-autoplay="true"></a>
       <a href="#about" class="about-btn scrollto">About The Event</a>
     </div>
@@ -94,17 +139,15 @@ if(isset($_POST['navbtnplace'])) {
         <div class="row">
           <div class="col-lg-6">
             <h2>About The Event</h2>
-            <p>Sed nam ut dolor qui repellendus iusto odit. Possimus inventore eveniet accusamus error amet eius aut
-              accusantium et. Non odit consequatur repudiandae sequi ea odio molestiae. Enim possimus sunt inventore in
-              est ut optio sequi unde.</p>
+            <p><?php echo $event_result['description'];?></p>
           </div>
           <div class="col-lg-3">
             <h3>Where</h3>
-            <p>Downtown Conference Center, New York</p>
+            <p><?php echo $venue_result['venue_name'];echo ", ";echo $venue_result['location'];?></p>
           </div>
           <div class="col-lg-3">
             <h3>When</h3>
-            <p>Monday to Wednesday<br>10-12 December</p>
+            <p><?php echo $event_result['date'];?></p>
           </div>
         </div>
       </div>
@@ -131,8 +174,8 @@ if(isset($_POST['navbtnplace'])) {
           <div class="col-lg-12 venue-info">
             <div class="row justify-content-center">
               <div class="col-11 col-lg-8">
-                <h3>Downtown Conference Center, New York</h3>
-                <p>Iste nobis eum sapiente sunt enim dolores labore accusantium autem. Cumque beatae ipsam. Est quae sit qui voluptatem corporis velit. Qui maxime accusamus possimus. Consequatur sequi et ea suscipit enim nesciunt quia velit.</p>
+                <h3><?php echo $venue_result['venue_name'];echo ", ";echo $venue_result['location'];?></h3>
+                <p><?php echo $venue_result['Venue_description'];?></p>
               </div>
             </div>
           </div>
@@ -145,67 +188,13 @@ if(isset($_POST['navbtnplace'])) {
 
           <div class="col-lg-6 col-md-6">
             <div class="venue-gallery">
-              <a href="img/venue-gallery/1.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/1.jpg" alt="" class="img-fluid" >
+              <a href="<?php echo $venue_result['photo_link'];?>" class="venobox" data-gall="venue-gallery">
+                <img src="<?php echo $venue_result['photo_link'];?>" alt="" class="img-fluid" >
               </a>
             </div>
           </div>
 
-          <!--<div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/2.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/2.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/3.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/3.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/4.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/4.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/5.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/5.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/6.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/6.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/7.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/7.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>
-
-          <div class="col-lg-3 col-md-4">
-            <div class="venue-gallery">
-              <a href="img/venue-gallery/8.jpg" class="venobox" data-gall="venue-gallery">
-                <img src="img/venue-gallery/8.jpg" alt="" class="img-fluid">
-              </a>
-            </div>
-          </div>-->
+          
 
         </div>
       </div>
@@ -224,53 +213,7 @@ if(isset($_POST['navbtnplace'])) {
 
         <div class="row no-gutters sponsors-wrap clearfix">
 
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/1.png" class="img-fluid" alt="">
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/2.png" class="img-fluid" alt="">
-            </div>
-          </div>
-        
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/3.png" class="img-fluid" alt="">
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/4.png" class="img-fluid" alt="">
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/5.png" class="img-fluid" alt="">
-            </div>
-          </div>
-        
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/6.png" class="img-fluid" alt="">
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/7.png" class="img-fluid" alt="">
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-4 col-xs-6">
-            <div class="sponsor-logo">
-              <img src="img/sponsors/8.png" class="img-fluid" alt="">
-            </div>
-          </div>
+          <?php echo $output; ?>
 
         </div>
 
@@ -372,7 +315,7 @@ if(isset($_POST['navbtnplace'])) {
             <div class="card mb-5 mb-lg-0">
               <div class="card-body">
                 <h5 class="card-title text-muted text-uppercase text-center">Standard Access</h5>
-                <h6 class="card-price text-center">$150</h6>
+                <h6 class="card-price text-center">$<?php echo $ticket_result['standard'];?></h6>
                 <hr>
                 <ul class="fa-ul">
                   <li><span class="fa-li"><i class="fa fa-check"></i></span>Regular Seating</li>
@@ -393,7 +336,7 @@ if(isset($_POST['navbtnplace'])) {
             <div class="card mb-5 mb-lg-0">
               <div class="card-body">
                 <h5 class="card-title text-muted text-uppercase text-center">Pro Access</h5>
-                <h6 class="card-price text-center">$250</h6>
+                <h6 class="card-price text-center">$<?php echo $ticket_result['pro'];?></h6>
                 <hr>
                 <ul class="fa-ul">
                   <li><span class="fa-li"><i class="fa fa-check"></i></span>Regular Seating</li>
@@ -415,7 +358,7 @@ if(isset($_POST['navbtnplace'])) {
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title text-muted text-uppercase text-center">Premium Access</h5>
-                <h6 class="card-price text-center">$350</h6>
+                <h6 class="card-price text-center">$<?php echo $ticket_result['premium'];?></h6>
                 <hr>
                 <ul class="fa-ul">
                   <li><span class="fa-li"><i class="fa fa-check"></i></span>Regular Seating</li>
@@ -448,7 +391,7 @@ if(isset($_POST['navbtnplace'])) {
               </button>
             </div>
             <div class="modal-body">
-              <form method="POST" action="#">
+              <form method="POST" action="myevents.php">
                 <!--<div class="form-group">
                   <input type="text" class="form-control" name="your-name" placeholder="Your Name">
                 </div>-->
