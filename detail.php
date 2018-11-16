@@ -391,7 +391,7 @@ if(isset($_POST['navbtnplace'])) {
               </button>
             </div>
             <div class="modal-body">
-              <form method="POST" action="myevents.php">
+              <form method="POST" action="insert.php">
                 <!--<div class="form-group">
                   <input type="text" class="form-control" name="your-name" placeholder="Your Name">
                 </div>-->

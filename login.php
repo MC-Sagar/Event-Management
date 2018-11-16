@@ -1,6 +1,7 @@
 <?php
 require 'connection.php';
-require 'valid.php';
+require 'valid.php';;
+
 if(isset($_POST['email'])&& isset($_POST['password'])){
 	$username=$_POST['email'];
 	$password=$_POST['password'];
